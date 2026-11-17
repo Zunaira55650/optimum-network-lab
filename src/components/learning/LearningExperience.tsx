@@ -8,9 +8,13 @@ import {
   ChevronRight,
   ExternalLink,
   Info,
-  Network,
 } from 'lucide-react'
-import { AnimatePresence, motion } from 'motion/react'
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+  type HTMLMotionProps,
+} from 'motion/react'
 import {
   learningModuleOrder,
   learningModules,
@@ -19,6 +23,8 @@ import {
 } from '../../data/learningModules'
 import { ModuleQuiz } from './ModuleQuiz'
 import { ThemeToggle, type Theme } from '../ThemeToggle'
+import { OptimumMark } from '../portfolio/OptimumMark'
+import { navigationSpring, premiumEase, revealDuration } from '../../motion'
 
 const ModuleDemo = lazy(() =>
   import('./ModuleDemos').then((module) => ({ default: module.ModuleDemo })),
@@ -39,6 +45,69 @@ type LearningExperienceProps = {
 const panelClass =
   'rounded-2xl border border-white/[0.075] bg-[#10141c] p-5 shadow-[0_8px_28px_rgba(0,0,0,0.12)] sm:rounded-[20px] sm:p-6'
 
+function LessonReveal({
+  className,
+  ...props
+}: HTMLMotionProps<'section'>) {
+  const reduceMotion = useReducedMotion()
+
+  return (
+    <motion.section
+      {...props}
+      className={className}
+      initial={reduceMotion ? false : { opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.1 }}
+      transition={{
+        duration: reduceMotion ? 0 : revealDuration,
+        ease: premiumEase,
+      }}
+    />
+  )
+}
+
+const highlightedConceptPattern =
+  /(Optimum Network Lab|Optimum Gateway|Beacon Node|GossipSub|mump2p|RLNC|WebSocket|gRPC|Optimum)/g
+const highlightedConcepts = new Set([
+  'Optimum Network Lab',
+  'Optimum Gateway',
+  'Beacon Node',
+  'GossipSub',
+  'mump2p',
+  'RLNC',
+  'WebSocket',
+  'gRPC',
+  'Optimum',
+])
+
+function HighlightedText({ text }: { text: string }) {
+  const reduceMotion = useReducedMotion()
+
+  return (
+    <>
+      {text.split(highlightedConceptPattern).map((part, index) =>
+        highlightedConcepts.has(part) ? (
+          <motion.span
+            className="lesson-concept-term"
+            initial={reduceMotion ? false : { opacity: 0, y: 4 }}
+            key={`${part}-${index}`}
+            transition={{
+              duration: reduceMotion ? 0 : 0.38,
+              delay: reduceMotion ? 0 : Math.min(index * 0.025, 0.15),
+              ease: premiumEase,
+            }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            {part}
+          </motion.span>
+        ) : (
+          part
+        ),
+      )}
+    </>
+  )
+}
+
 function SectionHeading({
   number,
   eyebrow,
@@ -50,8 +119,19 @@ function SectionHeading({
   title: string
   titleId?: string
 }) {
+  const reduceMotion = useReducedMotion()
+
   return (
-    <div className="mb-5 flex items-start gap-3.5">
+    <motion.div
+      className="mb-5 flex items-start gap-3.5"
+      initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.25 }}
+      transition={{
+        duration: reduceMotion ? 0 : 0.52,
+        ease: premiumEase,
+      }}
+    >
       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] border border-cyan-200/10 bg-cyan-200/[0.045] font-mono text-[11px] text-cyan-100">
         {number}
       </span>
@@ -63,10 +143,59 @@ function SectionHeading({
           id={titleId}
           className="mt-1 text-lg font-semibold tracking-[-0.025em] text-white sm:text-xl"
         >
-          {title}
+          <HighlightedText text={title} />
         </h2>
       </div>
-    </div>
+    </motion.div>
+  )
+}
+
+function ReferencesPanel({
+  title,
+  description,
+  sources,
+}: {
+  title: string
+  description: string
+  sources: { label: string; href: string }[]
+}) {
+  if (sources.length === 0) {
+    return null
+  }
+
+  return (
+    <section aria-label={title} className="lesson-reference-panel">
+      <div className="lesson-reference-heading">
+        <div>
+          <p className="lesson-reference-kicker">SOURCE MATERIAL</p>
+          <h3 className="lesson-reference-title-heading">{title}</h3>
+          <p className="lesson-reference-description">{description}</p>
+        </div>
+        <span className="lesson-reference-count">
+          {sources.length} {sources.length === 1 ? 'source' : 'sources'}
+        </span>
+      </div>
+      <div className="lesson-reference-grid">
+        {sources.map((source, index) => (
+          <a
+            key={`${source.href}-${index}`}
+            className="lesson-reference-link"
+            href={source.href}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <span className="lesson-reference-link-title">{source.label}</span>
+            <span className="lesson-reference-host">
+              {new URL(source.href).hostname.replace(/^www\./, '')}
+            </span>
+            <span className="lesson-reference-action">
+              Open source
+              <ExternalLink aria-hidden="true" className="h-3 w-3" />
+            </span>
+          </a>
+        ))}
+      </div>
+    </section>
   )
 }
 
@@ -77,8 +206,20 @@ function ChapterSection({
   section: LearningChapterSection
   index: number
 }) {
+  const reduceMotion = useReducedMotion()
+
   return (
-    <section className={panelClass}>
+    <motion.section
+      className={panelClass}
+      initial={reduceMotion ? false : { opacity: 0, y: 22 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.12 }}
+      transition={{
+        duration: reduceMotion ? 0 : revealDuration,
+        delay: reduceMotion ? 0 : Math.min(index * 0.06, 0.24),
+        ease: premiumEase,
+      }}
+    >
       <SectionHeading
         number={String(index + 1).padStart(2, '0')}
         eyebrow="CHAPTER SECTION"
@@ -132,30 +273,12 @@ function ChapterSection({
           ))}
         </ul>
       </div>
-      <div className="mt-4 border-t border-white/[0.06] pt-3">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-slate-500">
-          References
-        </p>
-        <ul className="mt-1.5 space-y-1">
-          {section.sources.map((source) => (
-            <li key={source.href}>
-              <a
-                className="group/link inline-flex items-center gap-1.5 py-1 text-[11px] leading-5 text-slate-400 transition hover:text-cyan-100"
-                href={source.href}
-                rel="noreferrer"
-                target="_blank"
-              >
-                {source.label}
-                <ExternalLink
-                  aria-hidden="true"
-                  className="h-3 w-3 shrink-0 text-slate-600 transition group-hover/link:text-cyan-200"
-                />
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
+      <ReferencesPanel
+        title="References"
+        description={`Original sources for ${section.title}. Links open the referenced material in a new tab.`}
+        sources={section.sources}
+      />
+    </motion.section>
   )
 }
 
@@ -170,6 +293,7 @@ export function LearningExperience({
   onToggleCompletion,
   onToggleTheme,
 }: LearningExperienceProps) {
+  const reduceMotion = useReducedMotion()
   const module = learningModules[moduleId]
   const currentIndex = learningModuleOrder.indexOf(moduleId)
   const previousModule = learningModuleOrder[currentIndex - 1]
@@ -183,17 +307,10 @@ export function LearningExperience({
       />
       <header className="sticky top-0 z-30 border-b border-white/[0.07] bg-[#090c13]/90 px-4 backdrop-blur-xl sm:px-7">
         <div className="mx-auto flex h-[68px] max-w-[1440px] items-center justify-between gap-4">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] border border-cyan-100/15 bg-gradient-to-br from-cyan-200/15 to-blue-300/[0.04] text-cyan-100">
-              <Network aria-hidden="true" className="h-[18px] w-[18px]" />
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-xs font-semibold tracking-[-0.02em] text-white sm:text-[13px]">
-                Optimum Network Lab
-              </p>
-              <p className="mt-0.5 hidden text-[10px] uppercase tracking-[0.12em] text-slate-600 sm:block">
-                Learning path
-              </p>
+          <div className="flex min-w-0 items-center">
+            <div className="portfolio-lesson-brand">
+              <OptimumMark className="portfolio-lesson-logo" />
+              <span className="portfolio-lesson-name">Optimum Network Lab</span>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
@@ -234,31 +351,55 @@ export function LearningExperience({
                 const item = learningModules[id]
                 const active = id === moduleId
                 return (
-                  <button
+                  <motion.button
                     key={id}
                     aria-current={active ? 'step' : undefined}
-                    className={`flex min-h-11 shrink-0 items-center gap-3 rounded-xl border px-3 text-left transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 lg:w-full ${
+                    className={`lesson-navigation-link relative isolate flex min-h-11 shrink-0 items-center gap-3 rounded-xl border px-3 text-left transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 lg:w-full ${
                       active
-                        ? 'border-cyan-100/[0.09] bg-cyan-100/[0.07] text-cyan-50 shadow-[inset_2px_0_0_#67e8f9]'
+                        ? 'text-cyan-50'
                         : 'border-white/[0.06] bg-[#10141c] text-slate-400 hover:border-white/[0.12] hover:bg-[#141923] hover:text-slate-200 lg:border-transparent lg:bg-transparent'
                     }`}
                     onClick={() => onSelectModule(id)}
+                    whileHover={reduceMotion ? undefined : { x: 3 }}
+                    whileTap={reduceMotion ? undefined : { scale: 0.985 }}
                     type="button"
                   >
+                    {active && (
+                      <motion.span
+                        aria-hidden="true"
+                        className="lesson-navigation-active"
+                        layoutId={
+                          reduceMotion ? undefined : 'active-lesson-navigation'
+                        }
+                        transition={
+                          reduceMotion ? { duration: 0 } : navigationSpring
+                        }
+                      />
+                    )}
                     <span
-                      className={`font-mono text-[10px] ${
+                      className={`relative z-10 font-mono text-[10px] ${
                         active ? 'text-cyan-200' : 'text-slate-600'
                       }`}
                     >
                       {item.order}
                     </span>
-                    <span className="whitespace-nowrap text-xs font-medium">
+                    <span className="relative z-10 whitespace-nowrap text-xs font-medium">
                       {item.navTitle}
                     </span>
                     {active && (
-                      <ChevronRight className="ml-auto hidden h-3.5 w-3.5 text-cyan-100/50 lg:block" />
+                      <motion.span
+                        className="relative z-10 ml-auto hidden lg:flex"
+                        initial={reduceMotion ? false : { opacity: 0, x: -4 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{
+                          duration: reduceMotion ? 0 : 0.22,
+                          ease: premiumEase,
+                        }}
+                      >
+                        <ChevronRight className="h-3.5 w-3.5 text-cyan-100/50" />
+                      </motion.span>
                     )}
-                  </button>
+                  </motion.button>
                 )
               })}
             </nav>
@@ -287,10 +428,17 @@ export function LearningExperience({
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={module.id}
-              initial={{ opacity: 0, y: 10 }}
+              initial={
+                reduceMotion
+                  ? false
+                  : { opacity: 0, y: 18, scale: 0.992 }
+              }
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.22, ease: 'easeOut' }}
+              exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
+              transition={{
+                duration: reduceMotion ? 0 : 0.36,
+                ease: premiumEase,
+              }}
             >
               <div className="mb-4 flex flex-wrap items-center gap-2 text-xs text-slate-500">
                 <button
@@ -321,21 +469,35 @@ export function LearningExperience({
                     {module.category}
                   </span>
                 </div>
-                <h1
+                <motion.h1
                   id="lesson-title"
                   className="mt-4 max-w-4xl text-balance text-3xl font-semibold leading-[1.1] tracking-[-0.05em] text-white sm:text-4xl lg:text-[3.25rem]"
+                  initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: reduceMotion ? 0 : 0.58,
+                    delay: reduceMotion ? 0 : 0.1,
+                    ease: premiumEase,
+                  }}
                 >
-                  {module.title}
-                </h1>
+                  <HighlightedText text={module.title} />
+                </motion.h1>
                 <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-400 sm:text-[15px]">
-                  {module.summary}
+                  <HighlightedText text={module.summary} />
                 </p>
                 <div className="mt-6 flex items-center gap-3 border-t border-white/[0.07] pt-4">
                   <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/[0.08]">
-                    <div
+                    <motion.div
                       className="h-full rounded-full bg-gradient-to-r from-cyan-300 to-blue-400"
-                      style={{
+                      initial={
+                        reduceMotion ? false : { width: 0 }
+                      }
+                      animate={{
                         width: `${((currentIndex + 1) / learningModuleOrder.length) * 100}%`,
+                      }}
+                      transition={{
+                        duration: reduceMotion ? 0 : 0.8,
+                        ease: premiumEase,
                       }}
                     />
                   </div>
@@ -349,7 +511,7 @@ export function LearningExperience({
                 <div className="min-w-0 space-y-5">
                   {module.chapterSections ? (
                     <>
-                      <section className={panelClass}>
+                      <LessonReveal className={panelClass}>
                         <SectionHeading
                           number="00"
                           eyebrow="CHAPTER OVERVIEW"
@@ -366,7 +528,7 @@ export function LearningExperience({
                             {module.realWorldExample}
                           </p>
                         </div>
-                      </section>
+                      </LessonReveal>
                       {module.chapterSections.map((section, index) => (
                         <ChapterSection
                           index={index}
@@ -377,7 +539,7 @@ export function LearningExperience({
                     </>
                   ) : (
                     <>
-                      <section className={panelClass}>
+                      <LessonReveal className={panelClass}>
                         <SectionHeading
                           number="01"
                           eyebrow="START WITH THE IDEA"
@@ -394,9 +556,9 @@ export function LearningExperience({
                             {module.realWorldExample}
                           </p>
                         </div>
-                      </section>
+                      </LessonReveal>
 
-                      <section className={panelClass}>
+                      <LessonReveal className={panelClass}>
                         <SectionHeading
                           number="02"
                           eyebrow="FOLLOW THE FLOW"
@@ -414,11 +576,14 @@ export function LearningExperience({
                             </li>
                           ))}
                         </ol>
-                      </section>
+                      </LessonReveal>
                     </>
                   )}
 
-                  <section aria-labelledby="demo-heading" className={panelClass}>
+                  <LessonReveal
+                    aria-labelledby="demo-heading"
+                    className={panelClass}
+                  >
                     <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
                       <SectionHeading
                         number={module.chapterSections ? '07' : '03'}
@@ -451,11 +616,11 @@ export function LearningExperience({
                       />
                       {module.demoNote}
                     </p>
-                  </section>
+                  </LessonReveal>
 
                   {!module.chapterSections && (
                     <>
-                      <section className={panelClass}>
+                      <LessonReveal className={panelClass}>
                         <SectionHeading
                           number="04"
                           eyebrow="CONNECT THE DOTS"
@@ -464,9 +629,9 @@ export function LearningExperience({
                         <p className="text-[13px] leading-7 text-slate-300 sm:text-sm">
                           {module.whyItMatters}
                         </p>
-                      </section>
+                      </LessonReveal>
                       {module.practicalUseCases && (
-                        <section className={panelClass}>
+                        <LessonReveal className={panelClass}>
                           <SectionHeading
                             number="05"
                             eyebrow="IN PRACTICE"
@@ -482,14 +647,14 @@ export function LearningExperience({
                               </li>
                             ))}
                           </ul>
-                        </section>
+                        </LessonReveal>
                       )}
                     </>
                   )}
                 </div>
 
                 <aside className="space-y-5 xl:sticky xl:top-[92px]">
-                  <section className={panelClass}>
+                  <LessonReveal className={panelClass}>
                     <div className="flex items-center gap-2.5">
                       <div className="flex h-8 w-8 items-center justify-center rounded-[10px] border border-emerald-200/10 bg-emerald-200/[0.045] text-emerald-200">
                         <Check aria-hidden="true" className="h-4 w-4" />
@@ -508,15 +673,15 @@ export function LearningExperience({
                         <li className="flex gap-2.5" key={takeaway}>
                           <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-200/70" />
                           <p className="text-xs leading-5 text-slate-400">
-                            {takeaway}
+                            <HighlightedText text={takeaway} />
                           </p>
                         </li>
                       ))}
                     </ul>
-                  </section>
+                  </LessonReveal>
 
                   {module.terminologyNote && (
-                    <section className="rounded-2xl border border-amber-200/10 bg-amber-200/[0.025] p-5">
+                    <LessonReveal className="rounded-2xl border border-amber-200/10 bg-amber-200/[0.025] p-5">
                       <div className="flex items-center gap-2 text-amber-100/90">
                         <Info aria-hidden="true" className="h-4 w-4" />
                         <h2 className="text-xs font-semibold">
@@ -526,38 +691,30 @@ export function LearningExperience({
                       <p className="mt-2.5 text-xs leading-5 text-slate-400">
                         {module.terminologyNote}
                       </p>
-                    </section>
+                    </LessonReveal>
                   )}
 
                   {!module.chapterSections && (
-                    <section className={panelClass}>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                        FURTHER READING
-                      </p>
-                      <ul className="mt-3 space-y-2.5">
-                        {module.sources.map((source) => (
-                          <li key={source.href}>
-                            <a
-                              className="group/link flex items-center justify-between gap-3 rounded-lg py-1 text-xs leading-5 text-slate-400 transition hover:text-cyan-100"
-                              href={source.href}
-                              rel="noreferrer"
-                              target="_blank"
-                            >
-                              <span>{source.label}</span>
-                              <ExternalLink
-                                aria-hidden="true"
-                                className="h-3.5 w-3.5 shrink-0 text-slate-600 transition group-hover/link:text-cyan-200"
-                              />
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    </section>
+                    <ReferencesPanel
+                      title="Further reading"
+                      description="Original documentation and technical references for this module."
+                      sources={module.sources}
+                    />
                   )}
                 </aside>
               </div>
 
-              <ModuleQuiz key={moduleId} moduleId={moduleId} />
+              <motion.div
+                initial={reduceMotion ? false : { opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.1 }}
+                transition={{
+                  duration: reduceMotion ? 0 : revealDuration,
+                  ease: premiumEase,
+                }}
+              >
+                <ModuleQuiz key={moduleId} moduleId={moduleId} />
+              </motion.div>
 
               <section
                 aria-label="Lesson completion"

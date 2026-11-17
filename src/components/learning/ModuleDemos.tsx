@@ -10,7 +10,7 @@ import {
   Server,
   Share2,
 } from 'lucide-react'
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import type { LearningDemoType } from '../../data/learningModules'
 
 const primaryButton =
@@ -19,6 +19,7 @@ const secondaryButton =
   'inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.025] px-4 text-xs font-medium text-slate-300 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200'
 
 function PeerToPeerDemo() {
+  const reduceMotion = useReducedMotion()
   const [discovered, setDiscovered] = useState(false)
   const [connected, setConnected] = useState(false)
   const [messageReceived, setMessageReceived] = useState(false)
@@ -245,8 +246,13 @@ function PeerToPeerDemo() {
               <motion.span
                 aria-hidden="true"
                 className="absolute left-0 top-1/2 z-10 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-cyan-200 shadow-[0_0_14px_rgba(103,232,249,0.8)]"
-                animate={{ left: ['0%', '100%'] }}
-                transition={{ duration: 0.65, ease: 'easeInOut' }}
+                animate={
+                  reduceMotion ? { left: '50%' } : { left: ['0%', '100%'] }
+                }
+                transition={{
+                  duration: reduceMotion ? 0 : 0.65,
+                  ease: 'easeInOut',
+                }}
               />
             )}
             <span className="relative z-0 rounded-full border border-white/[0.08] bg-[#0b0f17] px-2 py-1 text-center text-[9px] leading-3 text-slate-500">

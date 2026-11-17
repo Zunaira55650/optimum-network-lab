@@ -1,7 +1,19 @@
 import type { LucideIcon } from 'lucide-react'
-import { ArrowRight, Check, ChevronDown } from 'lucide-react'
-import { AnimatePresence, motion } from 'motion/react'
-import type { LearningModuleId } from '../data/learningModules'
+import { ArrowRight, Check } from 'lucide-react'
+import {
+  animate,
+  motion,
+  useInView,
+  useMotionValue,
+  useMotionValueEvent,
+  useReducedMotion,
+} from 'motion/react'
+import { useEffect, useRef, useState } from 'react'
+import {
+  learningModuleOrder,
+  type LearningModuleId,
+} from '../data/learningModules'
+import { premiumEase, revealDuration, revealStagger } from '../motion'
 
 type Tone = 'cyan' | 'violet' | 'blue' | 'mint' | 'amber'
 
@@ -58,13 +70,49 @@ export function MetricCard({
   tone,
   index,
 }: MetricCardProps) {
+  const reduceMotion = useReducedMotion()
+  const cardRef = useRef<HTMLElement>(null)
+  const isInView = useInView(cardRef, { once: true, amount: 0.35 })
+  const isNumeric = /^\d+$/.test(value)
+  const numericValue = Number(value)
+  const counter = useMotionValue(0)
+  const [animatedValue, setAnimatedValue] = useState(0)
+
+  useMotionValueEvent(counter, 'change', (current) => {
+    setAnimatedValue(Math.round(current))
+  })
+
+  useEffect(() => {
+    if (!isNumeric || reduceMotion || !isInView) {
+      return
+    }
+
+    const controls = animate(counter, numericValue, {
+      delay: index * 0.06,
+      duration: 0.9,
+      ease: premiumEase,
+    })
+
+    return () => controls.stop()
+  }, [counter, index, isInView, isNumeric, numericValue, reduceMotion])
+
+  const displayValue = !isNumeric || reduceMotion
+    ? value
+    : String(animatedValue).padStart(value.length, '0')
+
   return (
     <motion.article
-      className="group relative isolate overflow-hidden rounded-[19px] border border-white/[0.075] bg-[#10141c] p-4 shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-colors duration-300 hover:border-white/[0.14] hover:bg-[#121822] hover:shadow-[0_16px_34px_rgba(0,0,0,0.2)] sm:p-5"
-      whileHover={{ y: -3 }}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.08 + index * 0.07, duration: 0.4, ease: 'easeOut' }}
+      ref={cardRef}
+      className="portfolio-metric-card group relative isolate overflow-hidden rounded-[19px] border border-white/[0.075] bg-[#10141c] p-4 shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-colors duration-300 hover:border-white/[0.14] hover:bg-[#121822] hover:shadow-[0_16px_34px_rgba(0,0,0,0.2)] sm:p-5"
+      whileHover={reduceMotion ? undefined : { y: -4, scale: 1.005 }}
+      initial={reduceMotion ? false : { opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.35 }}
+      transition={{
+        delay: reduceMotion ? 0 : 0.08 + index * 0.07,
+        duration: reduceMotion ? 0 : revealDuration,
+        ease: premiumEase,
+      }}
     >
       <div
         aria-hidden="true"
@@ -83,8 +131,8 @@ export function MetricCard({
         <div className="min-w-0">
           <p className="text-[11px] font-medium text-slate-400">{label}</p>
           <div className="mt-1 flex items-baseline gap-2">
-            <p className="text-[26px] font-semibold leading-none tracking-[-0.05em] text-white">
-              {value}
+            <p className="text-[26px] font-semibold leading-none tracking-[-0.05em] text-white tabular-nums">
+              {displayValue}
             </p>
             <p className="truncate text-[10px] text-slate-600">{detail}</p>
           </div>
@@ -103,20 +151,15 @@ export type ModuleCardData = {
   icon: LucideIcon
   tone: Tone
   progress: number
-  concepts: [string, string]
 }
 
 export function ModuleCard({
   module,
   index,
-  expanded,
-  onToggle,
   onOpenLesson,
 }: {
   module: ModuleCardData
   index: number
-  expanded: boolean
-  onToggle: () => void
   onOpenLesson: () => void
 }) {
   const {
@@ -128,62 +171,58 @@ export function ModuleCard({
     icon: Icon,
     tone,
     progress,
-    concepts,
   } = module
+  const reduceMotion = useReducedMotion()
   const completed = progress === 100
-  const inProgress = progress > 0 && !completed
 
   return (
     <motion.article
       id={`module-${id}`}
       aria-labelledby={`module-title-${id}`}
-      className={`group relative isolate flex min-h-[242px] flex-col overflow-hidden rounded-[20px] border bg-[#10141c] p-5 shadow-[0_8px_24px_rgba(0,0,0,0.1)] transition-[border-color,background-color,box-shadow] duration-300 hover:border-white/[0.15] hover:bg-[#121822] hover:shadow-[0_18px_40px_rgba(0,0,0,0.22)] sm:p-[22px] ${
-        expanded
-          ? 'border-white/[0.16] shadow-[0_18px_42px_rgba(0,0,0,0.24)]'
-          : 'border-white/[0.075]'
-      }`}
-      layout="position"
-      whileHover={{ y: -3 }}
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2 + index * 0.07, duration: 0.42, ease: 'easeOut' }}
+      className="portfolio-module-card group relative isolate overflow-hidden rounded-[18px] border border-l-2 bg-[#10141c] shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-[border-color,background-color,box-shadow] duration-300 hover:border-white/[0.15] hover:bg-[#121822] hover:shadow-[0_14px_32px_rgba(0,0,0,0.16)]"
+      data-tone={tone}
+      initial={reduceMotion ? false : { opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.15 }}
+      whileHover={reduceMotion ? undefined : { y: -4, scale: 1.006 }}
+      transition={{
+        delay: reduceMotion ? 0 : index * revealStagger,
+        duration: reduceMotion ? 0 : revealDuration,
+        ease: premiumEase,
+      }}
     >
-      <div
-        aria-hidden="true"
-        className={`pointer-events-none absolute -right-14 -top-16 -z-10 h-40 w-40 rounded-full blur-3xl transition-opacity duration-500 ${
-          expanded ? `opacity-100 ${toneStyles[tone].glow}` : 'opacity-0 group-hover:opacity-100'
-        } ${toneStyles[tone].glow}`}
-      />
-      <div className="flex items-start justify-between gap-3">
+      <div className="module-card-identity">
         <div
-          className={`flex h-11 w-11 items-center justify-center rounded-[14px] border transition duration-300 group-hover:scale-105 group-hover:rotate-[-3deg] ${toneStyles[tone].icon}`}
+          className={`module-card-icon flex h-11 w-11 items-center justify-center rounded-[14px] border ${toneStyles[tone].icon}`}
         >
           <Icon aria-hidden="true" className="h-5 w-5" strokeWidth={1.7} />
         </div>
+        <span className="module-card-index">
+          {String(index + 1).padStart(2, '0')}
+          <span>/{String(learningModuleOrder.length).padStart(2, '0')}</span>
+        </span>
+      </div>
+      <div className="module-card-content">
         <span
-          className={`rounded-full border px-2.5 py-1 text-[9px] font-semibold tracking-[0.12em] ${toneStyles[tone].badge}`}
+          className={`module-card-category rounded-full border px-2.5 py-1 text-[9px] font-semibold tracking-[0.12em] ${toneStyles[tone].badge}`}
         >
           {category}
         </span>
-      </div>
-      <div className="mt-5">
         <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
           {acronym}
         </p>
         <h3
           id={`module-title-${id}`}
-          className="mt-1.5 text-base font-semibold leading-snug tracking-[-0.025em] text-slate-100"
+          className="mt-1 text-base font-semibold leading-snug tracking-[-0.025em] text-slate-100"
         >
           {title}
         </h3>
-        <p className="mt-2 text-[13px] leading-[1.7] text-slate-400">
+        <p className="mt-1.5 text-[13px] leading-[1.65] text-slate-400">
           {description}
         </p>
-      </div>
-      <div className="mt-auto pt-5">
         {progress > 0 && (
-          <div className="mb-3">
-            <div className="mb-2 flex items-center justify-between gap-2">
+          <div className="module-card-progress">
+            <div className="mb-1.5 flex items-center justify-between gap-2">
               <span
                 className={`inline-flex items-center gap-1.5 text-[11px] font-medium ${
                   completed ? 'text-emerald-100/90' : 'text-cyan-100/90'
@@ -207,81 +246,28 @@ export function ModuleCard({
             >
               <motion.div
                 className={`h-full rounded-full ${toneStyles[tone].bar}`}
-                initial={{ width: 0 }}
+                initial={reduceMotion ? false : { width: 0 }}
                 animate={{ width: `${progress}%` }}
-                transition={{ delay: 0.35 + index * 0.06, duration: 0.8 }}
+                transition={{
+                  delay: reduceMotion ? 0 : 0.35 + index * 0.06,
+                  duration: reduceMotion ? 0 : 0.8,
+                }}
               />
             </div>
           </div>
         )}
-        <div className="flex items-center justify-between gap-3 border-t border-white/[0.07] pt-3">
-          <span
-            className={`text-[11px] ${
-              inProgress ? 'text-slate-500' : 'text-slate-400'
-            }`}
-          >
-            {completed
-              ? 'Review this lesson'
-              : inProgress
-                ? 'Continue your path'
-                : 'Ready to explore'}
-          </span>
-          <button
-            aria-controls={expanded ? `module-preview-${id}` : undefined}
-            aria-expanded={expanded}
-            className="group/preview inline-flex min-h-8 items-center gap-1.5 rounded-lg px-2 text-[11px] font-medium text-slate-400 transition hover:bg-white/[0.05] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200"
-            onClick={onToggle}
-            type="button"
-          >
-            {expanded ? 'Close preview' : 'Preview'}
-            <ChevronDown
-              aria-hidden="true"
-              className={`h-3.5 w-3.5 transition-transform duration-200 ${
-                expanded ? 'rotate-180' : 'group-hover/preview:translate-y-0.5'
-              }`}
-            />
-          </button>
-        </div>
-        <AnimatePresence initial={false}>
-          {expanded && (
-            <motion.div
-              id={`module-preview-${id}`}
-              className="overflow-hidden"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.24, ease: 'easeOut' }}
-            >
-              <div className="mt-4 border-t border-white/[0.07] pt-4">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                  In this module
-                </p>
-                <div className="mt-2.5 flex flex-wrap gap-2">
-                  {concepts.map((concept) => (
-                    <span
-                      key={concept}
-                      className="rounded-full border border-white/[0.07] bg-white/[0.025] px-2.5 py-1 text-[10px] text-slate-300"
-                    >
-                      {concept}
-                    </span>
-                  ))}
-                </div>
-                <button
-                  className="mt-4 inline-flex min-h-9 items-center gap-2 rounded-lg bg-white/[0.045] px-3 text-[11px] font-medium text-slate-200 transition hover:bg-cyan-200/[0.1] hover:text-cyan-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200"
-                  onClick={onOpenLesson}
-                  type="button"
-                >
-                  Open lesson
-                  <ArrowRight
-                    aria-hidden="true"
-                    className="h-3.5 w-3.5"
-                  />
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
+      <motion.button
+        aria-label={`Open ${title} lesson`}
+        className="module-card-action"
+        onClick={onOpenLesson}
+        type="button"
+        whileHover={reduceMotion ? undefined : { x: 3 }}
+        whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+      >
+        Open Lesson
+        <ArrowRight aria-hidden="true" className="h-4 w-4" />
+      </motion.button>
     </motion.article>
   )
 }
