@@ -1,60 +1,96 @@
 # Optimum Network Lab
 
-Optimum Network Lab is a browser-based learning experience for decentralized networking. It contains nine guided lesson modules, module quizzes, and interactive teaching demos. The demos model concepts in the browser; they do not connect to a live Optimum or Ethereum network. The dashboard's standalone Network Simulator is marked as coming soon and is not implemented.
+An interactive learning space for exploring Optimum, peer-to-peer networking, and decentralized message delivery.
 
-Lesson completion, quiz results, and the selected theme are saved in the current browser's local storage. Progress is not synchronized between browsers or accounts.
+[Live demo](https://optimum-network-lab.vercel.app) · [GitHub repository](https://github.com/Zunaira55650/optimum-network-lab)
 
-## Prerequisites
+## About
 
-- Node.js `^20.19.0` or `>=22.12.0` (required by the installed Vite version)
+Optimum Network Lab combines guided lessons, quizzes, and small interactive demonstrations to make networking concepts easier to explore. The demonstrations are teaching models: they do not connect to a live Optimum or Ethereum network, and they are not performance simulations.
+
+## Learning path
+
+The learning path contains nine modules:
+
+| # | Module | Topics |
+|---|---|---|
+| 01 | Introduction to Optimum | Optimum's purpose, network components, and message flow |
+| 02 | Peer-to-Peer Networking | Peer discovery, identities, connections, and message exchange |
+| 03 | GossipSub | Topics, mesh propagation, and protocol control messages |
+| 04 | Random Linear Network Coding (RLNC) | Coded shards, finite-field arithmetic, and decoding |
+| 05 | mump2p | Mesh architecture, message propagation, and access paths |
+| 06 | Gateway Architecture | Gateway components, message bridging, configuration, and operations |
+| 07 | Beacon Node Integration | Beacon Node, Validator Client, and Gateway roles and message paths |
+| 08 | Signal: Gateway Connectivity & Network Discovery | Gateway enrollment, connectivity checks, and discovery |
+| 09 | Consumer Block Stream | Block delivery to consumers and stream operation |
+
+Across the modules, the project includes **72 quiz questions** with hints and explanations, and **9 interactive demos**—one for each module.
+
+## Features
+
+- Guided explanations, examples, and key takeaways for each module
+- Interactive, browser-based demonstrations of networking concepts
+- Module quizzes with saved results, including latest and best scores
+- Learning progress and theme preference saved in the browser's `localStorage`
+- Dark and light themes
+- **Network Simulator — Coming Soon**
+
+Saved progress and preferences are local to the current browser; they are not synchronized across browsers or accounts.
+
+## Tech stack
+
+Based on the dependencies declared in [`package.json`](./package.json):
+
+- **React 19** and **React DOM 19**
+- **TypeScript 7**
+- **Vite 8**
+- **Tailwind CSS 4** with the Tailwind Vite plugin
+- **Motion 14** for animations
+- **Lucide React** for icons
+- **XYFlow React** (declared dependency)
+
+## Getting started
+
+### Prerequisites
+
+- Node.js `^20.19.0` or `>=22.12.0`
 - npm
 
-## Install
-
-From the project directory, install the locked dependencies:
+### Install dependencies
 
 ```sh
 npm ci
 ```
 
-## Development
-
-Start the Vite development server:
+### Start the development server
 
 ```sh
 npm run dev
 ```
 
-Open the local URL printed by Vite. Stop the server with `Ctrl+C`.
+Open the local URL printed by Vite.
 
-## Quality checks
+## Build and lint
 
-Run Oxlint:
-
-```sh
-npm run lint
-```
-
-Run the application TypeScript check without emitting files:
-
-```sh
-npx tsc --project tsconfig.app.json --noEmit --incremental false
-```
-
-## Production build
-
-Create the production site in `dist/`:
+Create a production build in `dist/`:
 
 ```sh
 npm run build
 ```
 
-To inspect the generated build locally:
+Run the project linter:
+
+```sh
+npm run lint
+```
+
+To serve the production build locally after building:
 
 ```sh
 npm run preview
 ```
 
-## Deployment
+## Links
 
-This project is a static Vite application and does not require runtime environment variables or a backend service. Run `npm ci` and `npm run build`, then publish the contents of `dist/` to a static web host. The default Vite configuration assumes the site is served from the host's root path. For a subpath deployment, configure Vite's `base` option for that path and verify the resulting asset and favicon URLs before publishing.
+- **Live website:** [optimum-network-lab.vercel.app](https://optimum-network-lab.vercel.app)
+- **Source code:** [github.com/Zunaira55650/optimum-network-lab](https://github.com/Zunaira55650/optimum-network-lab)
