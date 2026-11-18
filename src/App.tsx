@@ -45,6 +45,22 @@ const LearningExperience = lazy(
     })),
 )
 
+let lessonPreparation: Promise<void> | undefined
+
+function prepareLesson() {
+  if (!lessonPreparation) {
+    lessonPreparation = Promise.all([
+      import('./components/learning/LearningExperience'),
+      import('./components/learning/ModuleDemos'),
+    ])
+      .then(() => undefined)
+      .catch((error: unknown) => {
+        lessonPreparation = undefined
+        console.error('Unable to preload lesson content.', error)
+      })
+  }
+}
+
 const lessonProgressStorageKey = 'optimum-network-lab.lesson-progress.v1'
 const themeStorageKey = 'optimum-network-lab.theme.v1'
 const dashboardSectionIds: DashboardSection[] = [
@@ -304,6 +320,7 @@ function App() {
   }
 
   const openLesson = (id: LearningModuleId) => {
+    prepareLesson()
     setActiveSection('learning-modules')
     setActiveLesson(id)
     scrollToTop()
@@ -451,6 +468,7 @@ function App() {
                         : 0,
                     }}
                     index={index}
+                    onPrepareLesson={prepareLesson}
                     onOpenLesson={() => openLesson(module.id)}
                   />
                 ))}

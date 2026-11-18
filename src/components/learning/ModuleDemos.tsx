@@ -2135,9 +2135,9 @@ function GatewayDemo() {
           </span>
         </div>
 
-        <div className="grid min-w-0 gap-3 lg:grid-cols-[minmax(130px,0.8fr)_auto_minmax(300px,1.8fr)_auto_minmax(135px,0.9fr)] lg:items-stretch">
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
-            <div className="rounded-lg border border-cyan-200/10 bg-cyan-200/[0.035] p-2.5">
+        <div className="grid min-w-0 gap-3 2xl:grid-cols-[minmax(0,0.8fr)_auto_minmax(0,1.8fr)_auto_minmax(0,0.9fr)] 2xl:items-stretch">
+          <div className="grid min-w-0 gap-2 sm:grid-cols-2 2xl:grid-cols-1">
+            <div className="min-w-0 rounded-lg border border-cyan-200/10 bg-cyan-200/[0.035] p-2.5">
               <div className="flex items-center gap-2">
                 <Send aria-hidden="true" className="h-3.5 w-3.5 text-cyan-100" />
                 <p className="text-[10px] font-semibold text-slate-200">
@@ -2152,7 +2152,7 @@ function GatewayDemo() {
                 {publisherConnected ? 'Connected to CL host' : 'Disconnected'}
               </span>
             </div>
-            <div className="rounded-lg border border-cyan-200/10 bg-cyan-200/[0.035] p-2.5">
+            <div className="min-w-0 rounded-lg border border-cyan-200/10 bg-cyan-200/[0.035] p-2.5">
               <div className="flex items-center gap-2">
                 <Radio aria-hidden="true" className="h-3.5 w-3.5 text-cyan-100" />
                 <p className="text-[10px] font-semibold text-slate-200">
@@ -2174,7 +2174,7 @@ function GatewayDemo() {
 
           <ArrowRight
             aria-hidden="true"
-            className="mx-auto h-4 w-4 rotate-90 self-center text-slate-600 lg:rotate-0"
+            className="mx-auto h-4 w-4 rotate-90 self-center text-slate-600 2xl:rotate-0"
           />
 
           <div className="min-w-0 rounded-xl border border-cyan-200/15 bg-cyan-200/[0.025] p-3">
@@ -2216,10 +2216,10 @@ function GatewayDemo() {
 
           <ArrowRight
             aria-hidden="true"
-            className="mx-auto h-4 w-4 rotate-90 self-center text-slate-600 lg:rotate-0"
+            className="mx-auto h-4 w-4 rotate-90 self-center text-slate-600 2xl:rotate-0"
           />
 
-          <div className="rounded-xl border border-emerald-200/10 bg-emerald-200/[0.025] p-3">
+          <div className="min-w-0 rounded-xl border border-emerald-200/10 bg-emerald-200/[0.025] p-3">
             <p className="text-[10px] font-semibold text-emerald-100/90">
               mump2p mesh
             </p>

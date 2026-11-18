@@ -156,10 +156,12 @@ export type ModuleCardData = {
 export function ModuleCard({
   module,
   index,
+  onPrepareLesson,
   onOpenLesson,
 }: {
   module: ModuleCardData
   index: number
+  onPrepareLesson: () => void
   onOpenLesson: () => void
 }) {
   const {
@@ -261,6 +263,8 @@ export function ModuleCard({
         aria-label={`Open ${title} lesson`}
         className="module-card-action"
         onClick={onOpenLesson}
+        onFocus={onPrepareLesson}
+        onPointerEnter={onPrepareLesson}
         type="button"
         whileHover={reduceMotion ? undefined : { x: 3 }}
         whileTap={reduceMotion ? undefined : { scale: 0.98 }}
